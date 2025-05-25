@@ -1,103 +1,330 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import gsap from "gsap";
+import Link from "next/link";
+
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const lenaRefs = useRef([]);
+  const moreauRefs = useRef([]);
+  const imageRef = useRef(null);
+  const headerRef = useRef(null);
+  const contentRef = useRef(null);
+  const quoteRef = useRef(null);
+  const socialRef = useRef(null);
+  const aboutModalCardRef = useRef(null); // Using this name for the About modal's ref
+  const contactModalCardRef = useRef(null); // NEW: Ref for the Contact modal's card
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const [isAboutModalOpen, setIsAboutModalOpen] = useState(false); // Renamed original isModalOpen
+  const [isContactOpen, setIsContactOpen] = useState(false); // NEW: State for Contact modal visibility
+
+  const [currentImage, setCurrentImage] = useState("/photos/Hero Image.webp");
+
+  const heroImages = [
+    "/photos/Hero Image.webp",
+    "/photos/20250514_2314_Happy Tourist Posing_remix_01jv7y97g5fv1rybc653mg175c.png"
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImage((prev) => {
+        const currentIndex = heroImages.indexOf(prev);
+        const nextIndex = (currentIndex + 1) % heroImages.length;
+        return heroImages[nextIndex];
+      });
+    }, 7000);
+
+    return () => clearInterval(interval);
+  }, [heroImages]); // Added heroImages to dependency array
+
+  // GSAP entry animation for Hero (Keeping your original logic)
+  useEffect(() => {
+    gsap.set([
+      quoteRef.current,
+      ...lenaRefs.current,
+      ...moreauRefs.current,
+      imageRef.current,
+      headerRef.current,
+      contentRef.current,
+      socialRef.current
+    ], { opacity: 0 });
+
+    gsap.set(imageRef.current, {
+      opacity: 0,
+      x: 32,
+    });
+
+    const tl = gsap.timeline();
+
+    tl.to(quoteRef.current, {
+      opacity: 1,
+      x: 0,
+      duration: 1,
+      ease: "power3.out"
+    })
+      .to(lenaRefs.current, {
+        opacity: 1,
+        y: 0,
+        duration: 0.5,
+        ease: "power3.out",
+        stagger: 0.12,
+      })
+      .to(moreauRefs.current, {
+        opacity: 1,
+        y: 0,
+        duration: 0.5,
+        ease: "power3.out",
+        stagger: 0.12,
+      })
+      .to(imageRef.current, {
+        opacity: 1,
+        x: 0,
+        duration: 0.4,
+        ease: "power3.out",
+      })
+      .to([headerRef.current, contentRef.current], {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        ease: "power2.out",
+        stagger: 0.2,
+      })
+      .to(socialRef.current, {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        ease: "power2.out",
+      });
+  }, []);
+
+  // Animate "About" modal on open
+  useEffect(() => {
+    if (isAboutModalOpen) { // Use the renamed state
+      gsap.from(aboutModalCardRef.current, { // Use the renamed ref
+        y: -100,
+        rotate: -5,
+        opacity: 0,
+        duration: 0.6,
+        ease: "power3.out",
+      });
+    }
+  }, [isAboutModalOpen]); // Use the renamed state
+
+  // NEW: Animate "Contact" modal on open
+  useEffect(() => {
+    if (isContactOpen) {
+      gsap.from(contactModalCardRef.current, { // Target the new ref
+        y: -100,
+        rotate: -5,
+        opacity: 0,
+        duration: 0.6,
+        ease: "power3.out",
+      });
+    }
+  }, [isContactOpen]); // Listen to the new state
+
+  // NEW: Function to open About modal and ensure Contact modal is closed
+  const openAboutModalHandler = () => {
+    setIsContactOpen(false);
+    setIsAboutModalOpen(true);
+  };
+
+  // NEW: Function to open Contact modal and ensure About modal is closed
+  const openContactModalHandler = () => {
+    setIsAboutModalOpen(false);
+    setIsContactOpen(true);
+  };
+
+
+  return (
+    <main className="md:h-screen md:overflow-hidden overflow-x-hidden text-black px-6 md:px-20 max-w-7xl mx-auto ">
+      {/* About Modal */}
+      {isAboutModalOpen && ( // Use renamed state
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div
+          ref={aboutModalCardRef} // Use renamed ref
+          className="bg-white border border-neutral-200 p-8 rounded-2xl shadow-2xl w-full max-w-xl relative mx-4 sm:mx-0 space-y-4"
+        >
+          <button
+            onClick={() => setIsAboutModalOpen(false)} // Use renamed setter
+            className="absolute top-4 right-4 text-2xl text-gray-400 hover:text-black transition-colors"
+            aria-label="Close about modal"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            ×
+          </button>
+
+          <h2 className="text-3xl font-serif mb-2 text-gray-900">About Lena Moreau</h2>
+
+          <p className="text-[1.075rem] leading-relaxed text-gray-700 font-light">
+            <strong className="text-gray-900 font-medium">Lena Moreau</strong> is a Paris-based
+            portrait & fashion photographer who believes <em>light is a language</em>. Her work has
+            appeared in <strong>Vogue Local</strong>, <strong>Elan Studio</strong>, and
+            <strong> Maison Rive</strong>.
+          </p>
+
+          <p className="text-[1.075rem] leading-relaxed text-gray-700 font-light">
+            Through mood, tone, and subtle expressions, she captures timeless moments in a soft,
+            cinematic language — crafting photographs that feel both intimate and eternal.
+          </p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      </div>
+      )}
+
+      {/* NEW: Contact Modal */}
+      {isContactOpen && ( // Use new state for contact modal
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div
+          ref={contactModalCardRef} // Use the new ref for contact modal card
+          className="bg-white border border-neutral-200 p-8 rounded-2xl shadow-2xl w-full max-w-xl relative mx-4 sm:mx-0 space-y-4"
         >
+          <button
+            onClick={() => setIsContactOpen(false)} // Close contact modal using its state setter
+            className="absolute top-4 right-4 text-2xl text-gray-400 hover:text-black transition-colors"
+            aria-label="Close contact modal"
+          >
+            ×
+          </button>
+
+          <h2 className="text-3xl font-serif mb-2 text-gray-900">Contact Lena</h2> {/* Placeholder Title */}
+
+          <p className="text-[1.075rem] leading-relaxed text-gray-700 font-light">
+            For inquiries, collaborations, or just to say hello, please reach out.
+            {/* Placeholder Content */}
+          </p>
+          <p className="text-[1.075rem] leading-relaxed text-gray-700 font-light">
+            Email: <a href="mailto:lena.moreau.photo@example.com" className="text-blue-600 hover:underline">lena.moreau.photo@example.com</a>
+            <br />
+            You can also find Lena on social media linked below.
+             {/* Placeholder Content */}
+          </p>
+        </div>
+      </div>
+      )}
+      
+
+      {/* Header */}
+      <header
+        ref={headerRef}
+        className="flex justify-between items-center mb-10 pt-6 opacity-0 translate-y-4"
+      >
+        <div className="text-lg font-bold border py-2 px-4 rounded-full font-serif italic tracking-wide hover:shadow-md hover:shadow-gray-300 transition-all duration-300 ease-in-out">
+          M
+        </div>
+        <nav className="flex gap-6 text-sm md:text-base font-medium" aria-label="Main navigation">
+          <button
+            onClick={openAboutModalHandler} // Use new handler for About
+            className="relative after:absolute after:bottom-0 after:left-0 after:h-[1px] after:bg-black after:w-0 hover:after:w-full after:transition-all after:duration-300 after:ease-in-out after:origin-left transition-all duration-300 ease-in-out"
+          >
+            About
+          </button>
+        <>
+  <Link
+    href="/portfolio"
+    className="relative after:absolute after:bottom-0 after:left-0 after:h-[1px] after:bg-black after:w-0 hover:after:w-full after:transition-all after:duration-300 after:ease-in-out after:origin-left transition-all duration-300 ease-in-out"
+  >
+    Portfolio
+  </Link>
+
+ <button
+    onClick={openContactModalHandler} // Use new handler for Contact
+    className="relative after:absolute after:bottom-0 after:left-0 after:h-[1px] after:bg-black after:w-0 hover:after:w-full after:transition-all after:duration-300 after:ease-in-out after:origin-left transition-all duration-300 ease-in-out"
+  >
+    Contact
+  </button>
+</>
+
+        </nav>
+      </header>
+
+      {/* Hero Section (Keeping your original structure and classes) */}
+      <section className="flex flex-col md:flex-row items-start md:items-center gap-10 md:gap-20 overflow-x-hidden">
+        {/* Text Block */}
+        <div className="flex flex-col flex-1 text-left space-y-6 max-w-xl">
+          <div className="flex flex-col gap-1 leading-none text-[4.5rem] md:text-[5rem] font-serif tracking-tight">
+            <div className="flex gap-[0.2rem] justify-start">
+              {"Lena".split("").map((char, index) => (
+                <span
+                  key={`lena-${index}`}
+                  ref={(el) => (lenaRefs.current[index] = el)}
+                  className="inline-block opacity-0 translate-y-8"
+                >
+                  {char}
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-[0.2rem] justify-start -mt-2">
+              {"Moreau".split("").map((char, index) => (
+                <span
+                  key={`moreau-${index}`}
+                  ref={(el) => (moreauRefs.current[index] = el)}
+                  className="inline-block opacity-0 translate-y-8"
+                >
+                  {char}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Quote */}
+          <p
+            ref={quoteRef}
+            className="italic text-gray-500 text-base md:text-lg opacity-0 -translate-x-4 border-l-4 pl-4 border-neutral-300"
+
+          >
+            “La lumière naturelle est ma muse.”
+          </p>
+
+          {/* Description */}
+          <div
+            ref={contentRef}
+            className="flex flex-col space-y-4 text-[1.125rem] leading-relaxed text-neutral-700 opacity-0 translate-y-4"
+          >
+            <p className="text-lg font-medium text-black">
+              Fashion · Portrait Photographer · Paris
+            </p>
+            <p className="text-balance">
+              Capturing beauty in stillness and simplicity. Based in Paris, I craft quiet,
+              elegant frames that tell stories through mood and light.
+            </p>
+            <p className="text-sm text-neutral-500 text-balance">
+              Clients include Elan Studio, Maison Rive, The Edit Journal, and Vogue Local.
+            </p>
+          </div>
+
+          {/* Social Links */}
+          <div
+            ref={socialRef}
+            className="flex gap-6 pt-2 opacity-0 translate-y-4"
+          >
+            <a
+              href="#"
+              className="hover:scale-105 transition-all duration-300 ease-in-out underline underline-offset-4"
+            >
+              Instagram
+            </a>
+            <a
+              href="#"
+              className="hover:scale-105 transition-all duration-300 ease-in-out underline underline-offset-4"
+            >
+              Facebook
+            </a>
+          </div>
+        </div>
+
+        {/* Image (Keeping your original Image component setup) */}
+        <div className="flex justify-center md:justify-end flex-1 max-h-[90vh]  ">
           <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+            ref={imageRef}
+            src={currentImage}
+            alt="Portrait of Lena Moreau in natural light"
+            width={400}
+            height={300}
+            className="object-cover rounded-2xl border border-black  opacity-0  hover:brightness-100 grayscale hover:grayscale-0  transition-all duration-300 ease-in-out will-change-transform"
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        </div>
+      </section>
+    </main>
   );
 }
